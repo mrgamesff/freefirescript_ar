@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>سكريبت فري فاير</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script async src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -16,6 +16,9 @@
       animation: gradientBG 15s ease infinite;
       text-align: center;
       padding: 50px 10px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
       user-select: none;
     }
     @keyframes gradientBG {
@@ -204,7 +207,7 @@
 </div>
 
 <div id="step4" class="step">
-  <a href="#" onclick="startTelegramAuth(); return false;">
+  <a href="#" onclick="completeStep(4, 'https://t.me/MRGAMESFF'); return false;">
     <span>📺🔔 اضغط هنا واشترك في قناة التليجرام الخاصة بنا</span>
     <span id="check4">➡️</span>
   </a>
@@ -225,12 +228,9 @@
 <script>
   const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000;
   const step3Links = ["https://youtu.be/ySAlw1O0sog?si=nAOJfDZXdHdRpE5z"];
-  const step3StorageKey = "step3State_ff_v1_script1vip";
   const savedState = JSON.parse(localStorage.getItem("stepsState") || "{}");
+  const step3StorageKey = "step3State_ff_v1_script1vip";
   const step3Data = JSON.parse(localStorage.getItem(step3StorageKey) || "{}");
-
-  const BOT_WEBAPP_URL = "https://mrgamesff.github.io/freefirescript_ar/telegram.html";
-  const TELEGRAM_CHECK_URL = "https://script.google.com/macros/s/AKfycbxTm5yNSSQTmBSUldxv6CtCn1u6kVPGvWzRbeDwfZGfsAfsYuDGNJduwJJKXWFIow-4uQ/exec";
 
   const isStateExpired = () => {
     if (!savedState.timestamp) return true;
@@ -245,6 +245,7 @@
           document.getElementById("check3").innerText = "✅";
           continue;
         }
+
         if (savedState["step" + i]) {
           document.getElementById("step" + i).classList.add("completed");
           document.getElementById("check" + i).innerText = "✅";
@@ -306,36 +307,6 @@
       unlockButtons();
       updateProgressBar();
     }, 10000);
-  }
-
-  function startTelegramAuth() {
-    const checkSpan = document.getElementById("check4");
-    checkSpan.innerHTML = '<span class="loading"></span>';
-
-    const win = window.open(BOT_WEBAPP_URL, "_blank");
-
-    const timer = setInterval(() => {
-      const userId = localStorage.getItem("telegram_user_id");
-      if (userId) {
-        clearInterval(timer);
-        fetch(`${TELEGRAM_CHECK_URL}?user_id=${userId}`)
-          .then(res => res.text())
-          .then(result => {
-            if (result === "subscribed") {
-              document.getElementById("step4").classList.add("completed");
-              checkSpan.innerText = "✅";
-              saveStepState(4);
-              unlockButtons();
-              updateProgressBar();
-            } else {
-              checkSpan.innerText = "❌ لم يتم الاشتراك بعد";
-            }
-          })
-          .catch(() => {
-            checkSpan.innerText = "⚠️ حدث خطأ أثناء التحقق";
-          });
-      }
-    }, 2000);
   }
 
   function unlockButtons() {

@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>سكريبت فري فاير</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     * { box-sizing: border-box; }
     body {
@@ -16,9 +15,6 @@
       animation: gradientBG 15s ease infinite;
       text-align: center;
       padding: 50px 10px;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
     }
     @keyframes gradientBG {
@@ -208,7 +204,7 @@
 
 <div id="step4" class="step">
   <a href="#" onclick="completeStep(4, 'https://t.me/MRGAMESFF'); return false;">
-    <span>📺🔔 اضغط هنا واشترك في قناة التليجرام الخاصة بنا</span>
+    <span>📺🔔 اضغط هنا واشترك في قناة التيليجرام الخاصة بنا</span>
     <span id="check4">➡️</span>
   </a>
 </div>
@@ -228,9 +224,19 @@
 <script>
   const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000;
   const step3Links = ["https://youtu.be/ySAlw1O0sog?si=nAOJfDZXdHdRpE5z"];
-  const savedState = JSON.parse(localStorage.getItem("stepsState") || "{}");
   const step3StorageKey = "step3State_ff_v1_script1vip";
+  const step4StorageKey = "step4State_ff_v1_script1vip";
+
+  function saveStepState(step) {
+    const currentState = JSON.parse(localStorage.getItem("stepsState") || "{}");
+    currentState["step" + step] = true;
+    currentState.timestamp = Date.now();
+    localStorage.setItem("stepsState", JSON.stringify(currentState));
+  }
+
+  const savedState = JSON.parse(localStorage.getItem("stepsState") || "{}");
   const step3Data = JSON.parse(localStorage.getItem(step3StorageKey) || "{}");
+  const step4Data = JSON.parse(localStorage.getItem(step4StorageKey) || "{}");
 
   const isStateExpired = () => {
     if (!savedState.timestamp) return true;
@@ -246,6 +252,12 @@
           continue;
         }
 
+        if (i === 4 && step4Data.completed) {
+          document.getElementById("step4").classList.add("completed");
+          document.getElementById("check4").innerText = "✅";
+          continue;
+        }
+
         if (savedState["step" + i]) {
           document.getElementById("step" + i).classList.add("completed");
           document.getElementById("check" + i).innerText = "✅";
@@ -258,7 +270,7 @@
         document.getElementById("step3").classList.add("active");
       }
 
-      if (step3Data.completed) {
+      if (step3Data.completed && !step4Data.completed) {
         document.getElementById("step4").classList.add("active");
       }
 
@@ -267,37 +279,100 @@
     } else {
       localStorage.removeItem("stepsState");
       localStorage.removeItem(step3StorageKey);
+      localStorage.removeItem(step4StorageKey);
     }
   };
 
-  function saveStepState(step) {
-    if (step === 3) return;
-    const current = JSON.parse(localStorage.getItem("stepsState") || "{}");
-    current["step" + step] = true;
-    current.timestamp = Date.now();
-    localStorage.setItem("stepsState", JSON.stringify(current));
+  function completeStep(step, url) {
+  const checkSpan = document.getElementById("check" + step);
+  const waitTime = (step === 4) ? 30000 : 10000;
+
+  // ✅ في كل مرة يتم تنفيذ الخطوة الرابعة، نظهر البوب
+  if (step === 4) {
+    const popup = document.createElement("div");
+    popup.id = "popupOverlay";
+    popup.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75); display: flex; align-items: center;
+      justify-content: center; z-index: 9999;
+    `;
+
+    const box = document.createElement("div");
+    box.style.cssText = `
+      background: #111; color: white; border-radius: 15px; padding: 25px;
+      max-width: 90%; width: 400px; text-align: center;
+      border: 2px solid #00ffff; box-shadow: 0 0 15px #0ff; font-size: 16px;
+    `;
+
+    box.innerHTML = `
+      <h3 style="color: gold; margin-bottom: 15px; font-size: 20px;">📌 ملحوظة هامة جداً</h3>
+      <p style="line-height: 1.7;">
+        يجب عليك الاشتراك في قناة التيليجرام لكي يتم فتح لك رابط التحميل<br>
+        وأيضًا لأننا سننشر سكريبت فري فاير أسطوري على قناة التيليجرام فقط 🔥
+      </p>
+      <a href="${url}" target="_blank" id="popupOkBtn" style="
+        margin-top: 20px; padding: 10px 22px; background: #00cc00; color: white;
+        border-radius: 8px; font-weight: bold; cursor: pointer;
+        box-shadow: 0 0 10px #0f0; transition: 0.3s; font-size: 16px;
+        display: inline-block; text-decoration: none;
+      ">📥 اضغط هنا للاشتراك 📥</a>
+    `;
+
+    popup.appendChild(box);
+    document.body.appendChild(popup);
+
+    // ✅ إزالة البوب عند الضغط على الزر
+    document.getElementById("popupOkBtn").onclick = () => {
+      popup.remove();
+
+      // المتابعة في تنفيذ الخطوة بعد إغلاق البوب
+      checkSpan.innerHTML = '<span class="loading"></span>';
+      setTimeout(() => {
+        document.getElementById("step" + step).classList.add("completed");
+        checkSpan.innerText = "✅";
+        const nextStep = document.getElementById("step" + (step + 1));
+        if (nextStep) nextStep.classList.add("active");
+
+        const data = { completed: true, timestamp: Date.now() };
+        localStorage.setItem("step4State_ff_v1_script1vip", JSON.stringify(data));
+
+        unlockButtons();
+        updateProgressBar();
+      }, waitTime);
+    };
+
+    return; // إيقاف تنفيذ ما تبقى لأن الباقي سيتم بعد غلق البوب
   }
 
-  function completeStep(step, url) {
-    const checkSpan = document.getElementById("check" + step);
-    checkSpan.innerHTML = '<span class="loading"></span>';
-    window.open(url, "_blank");
-    setTimeout(() => {
-      document.getElementById("step" + step).classList.add("completed");
-      checkSpan.innerText = "✅";
-      const nextStep = document.getElementById("step" + (step + 1));
-      if (nextStep) nextStep.classList.add("active");
+  // باقي الخطوات (1, 2, 3)
+  checkSpan.innerHTML = '<span class="loading"></span>';
+  window.open(url, "_blank");
+
+  setTimeout(() => {
+    document.getElementById("step" + step).classList.add("completed");
+    checkSpan.innerText = "✅";
+    const nextStep = document.getElementById("step" + (step + 1));
+    if (nextStep) nextStep.classList.add("active");
+
+    if (step === 3) {
+      const data = { completed: true, timestamp: Date.now() };
+      localStorage.setItem("step3State_ff_v1_script1vip", JSON.stringify(data));
+    } else {
       saveStepState(step);
-      unlockButtons();
-      updateProgressBar();
-    }, 10000);
-  }
+    }
+
+    unlockButtons();
+    updateProgressBar();
+  }, waitTime);
+}
+
 
   function rotateStepLinks() {
     const checkSpan = document.getElementById("check3");
     const url = step3Links[Math.floor(Math.random() * step3Links.length)];
     checkSpan.innerHTML = '<span class="loading"></span>';
     window.open(url, "_blank");
+
     setTimeout(() => {
       document.getElementById("step3").classList.add("completed");
       checkSpan.innerText = "✅";
@@ -310,8 +385,8 @@
   }
 
   function unlockButtons() {
-    const allCompleted = [...Array(4).keys()].every(i =>
-      document.getElementById("step" + (i + 1)).classList.contains("completed")
+    const allCompleted = [1, 2, 3, 4].every(i =>
+      document.getElementById("step" + i).classList.contains("completed")
     );
     if (allCompleted) {
       document.getElementById("finalMessage").innerText = '✅ تم تنفيذ كل الخطوات بنجاح';

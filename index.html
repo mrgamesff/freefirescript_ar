@@ -222,9 +222,10 @@
 </div>
 
 <script>
+  const pageId = "ar1"; // ✅ معرف مميز للصفحة
   const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000;
   const step3Links = ["https://youtu.be/ySAlw1O0sog?si=nAOJfDZXdHdRpE5z"];
-  const step3StorageKey = "step3State_ff_v1_script1vip";
+  const step3StorageKey = "step3State_ff_v1_" + pageId; // 👈 تخزين خاص للخطوة 3
   const step4StorageKey = "step4State_ff_v1_script1vip";
 
   function saveStepState(step) {
@@ -251,13 +252,11 @@
           document.getElementById("check3").innerText = "✅";
           continue;
         }
-
         if (i === 4 && step4Data.completed) {
           document.getElementById("step4").classList.add("completed");
           document.getElementById("check4").innerText = "✅";
           continue;
         }
-
         if (savedState["step" + i]) {
           document.getElementById("step" + i).classList.add("completed");
           document.getElementById("check" + i).innerText = "✅";
@@ -265,15 +264,12 @@
           if (nextStep) nextStep.classList.add("active");
         } else break;
       }
-
       if (savedState.step2 && !step3Data.completed) {
         document.getElementById("step3").classList.add("active");
       }
-
-      if (step3Data.completed && !step4Data.completed) {
-        document.getElementById("step4").classList.add("active");
-      }
-
+      if (step3Data.completed) {
+  document.getElementById("step4").classList.add("active");
+}
       unlockButtons();
       updateProgressBar();
     } else {
@@ -287,46 +283,50 @@
   const checkSpan = document.getElementById("check" + step);
   const waitTime = (step === 4) ? 30000 : 10000;
 
-  // ✅ في كل مرة يتم تنفيذ الخطوة الرابعة، نظهر البوب
+  // ✅ الخطوة 4: إذا كانت مكتملة، فقط افتح الرابط بدون البوب
   if (step === 4) {
+    if (step4Data.completed) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    // ⬇️ إظهار البوب أول مرة فقط
     const popup = document.createElement("div");
     popup.id = "popupOverlay";
     popup.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.75); display: flex; align-items: center;
-      justify-content: center; z-index: 9999;
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.75);display:flex;align-items:center;
+      justify-content:center;z-index:9999;
     `;
 
     const box = document.createElement("div");
     box.style.cssText = `
-      background: #111; color: white; border-radius: 15px; padding: 25px;
-      max-width: 90%; width: 400px; text-align: center;
-      border: 2px solid #00ffff; box-shadow: 0 0 15px #0ff; font-size: 16px;
+      background:#111;color:white;border-radius:15px;padding:25px;
+      max-width:90%;width:400px;text-align:center;
+      border:2px solid #00ffff;box-shadow:0 0 15px #0ff;font-size:16px;
     `;
 
     box.innerHTML = `
-      <h3 style="color: gold; margin-bottom: 15px; font-size: 20px;">📌 ملحوظة هامة جداً</h3>
-      <p style="line-height: 1.7;">
+      <h3 style="color:gold;margin-bottom:15px;font-size:20px;">📌 ملحوظة هامة جداً</h3>
+      <p style="line-height:1.7;">
         يجب عليك الاشتراك في قناة التيليجرام لكي يتم فتح لك رابط التحميل<br>
         وأيضًا لأننا سننشر سكريبت فري فاير أسطوري على قناة التيليجرام فقط 🔥
       </p>
       <a href="${url}" target="_blank" id="popupOkBtn" style="
-        margin-top: 20px; padding: 10px 22px; background: #00cc00; color: white;
-        border-radius: 8px; font-weight: bold; cursor: pointer;
-        box-shadow: 0 0 10px #0f0; transition: 0.3s; font-size: 16px;
-        display: inline-block; text-decoration: none;
+        margin-top:20px;padding:10px 22px;background:#00cc00;color:white;
+        border-radius:8px;font-weight:bold;cursor:pointer;
+        box-shadow:0 0 10px #0f0;transition:0.3s;font-size:16px;
+        display:inline-block;text-decoration:none;
       ">📥 اضغط هنا للاشتراك 📥</a>
     `;
 
     popup.appendChild(box);
     document.body.appendChild(popup);
 
-    // ✅ إزالة البوب عند الضغط على الزر
     document.getElementById("popupOkBtn").onclick = () => {
       popup.remove();
-
-      // المتابعة في تنفيذ الخطوة بعد إغلاق البوب
       checkSpan.innerHTML = '<span class="loading"></span>';
+
       setTimeout(() => {
         document.getElementById("step" + step).classList.add("completed");
         checkSpan.innerText = "✅";
@@ -338,13 +338,16 @@
 
         unlockButtons();
         updateProgressBar();
+
+        // ✅ بعد إكمال الخطوة، يفتح الرابط تلقائيًا
+        window.open(url, "_blank");
       }, waitTime);
     };
 
-    return; // إيقاف تنفيذ ما تبقى لأن الباقي سيتم بعد غلق البوب
+    return;
   }
 
-  // باقي الخطوات (1, 2, 3)
+  // ✅ باقي الخطوات
   checkSpan.innerHTML = '<span class="loading"></span>';
   window.open(url, "_blank");
 
@@ -356,7 +359,7 @@
 
     if (step === 3) {
       const data = { completed: true, timestamp: Date.now() };
-      localStorage.setItem("step3State_ff_v1_script1vip", JSON.stringify(data));
+      localStorage.setItem(step3StorageKey, JSON.stringify(data));
     } else {
       saveStepState(step);
     }
@@ -372,7 +375,6 @@
     const url = step3Links[Math.floor(Math.random() * step3Links.length)];
     checkSpan.innerHTML = '<span class="loading"></span>';
     window.open(url, "_blank");
-
     setTimeout(() => {
       document.getElementById("step3").classList.add("completed");
       checkSpan.innerText = "✅";
@@ -385,9 +387,7 @@
   }
 
   function unlockButtons() {
-    const allCompleted = [1, 2, 3, 4].every(i =>
-      document.getElementById("step" + i).classList.contains("completed")
-    );
+    const allCompleted = [1, 2, 3, 4].every(i => document.getElementById("step" + i).classList.contains("completed"));
     if (allCompleted) {
       document.getElementById("finalMessage").innerText = '✅ تم تنفيذ كل الخطوات بنجاح';
       document.getElementById("finalMessage").style.color = 'lime';

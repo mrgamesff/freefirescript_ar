@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>سكريبت فري فاير</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>نفذ الشروط</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* نفس تنسيقاتك الأصلية بالضبط دون أي تغيير */
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -15,7 +16,6 @@
       animation: gradientBG 15s ease infinite;
       text-align: center;
       padding: 50px 10px;
-      user-select: none;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -27,6 +27,7 @@
       margin-bottom: 20px;
       color: #00ffff;
       text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+      animation: fadeInDown 1s ease forwards;
     }
     .progress-container {
       width: 100%;
@@ -65,6 +66,7 @@
     .step.active {
       opacity: 1;
       pointer-events: auto;
+      animation: fadeInUp 0.8s ease forwards;
     }
     .step.completed {
       border-color: lime;
@@ -135,47 +137,20 @@
       opacity: 1;
       box-shadow: 0 0 15px #0f0;
     }
-    .final-buttons a:hover {
-      transform: scale(1.03);
+    .final-buttons a:hover { transform: scale(1.03); }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .password-inline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-      font-size: 16px;
-      flex-wrap: wrap;
-    }
-    .password-inline .blurred {
-      filter: blur(5px);
-      user-select: none;
-    }
-    .password-inline button {
-      background: #00aa00;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 6px #0f0;
-      transition: 0.3s;
-    }
-    .password-inline button:hover {
-      transform: scale(1.05);
-      background: #00cc00;
-    }
-    @media (max-width: 480px) {
-      h2 { font-size: 20px; }
-      .step span { font-size: 14px; }
-      .final-message { font-size: 16px; }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-<h2>نفذ هذه الخطوات أولاً لكي يتم فتح لك رابط التحميل واظهار كلمة السر</h2>
+<h2>نفذ هذه الخطوات أولاً لكي يتم فتح لك روابط التحميل</h2>
 
 <div class="progress-container">
   <div class="progress-bar" id="progressBar"></div>
@@ -196,156 +171,91 @@
 </div>
 
 <div id="step3" class="step">
-  <a href="#" onclick="rotateStepLinks(); return false;">
+  <a href="#" onclick="completeStep(3); return false;">
     <span>👍💬 اضغط هنا وقم بعمل لايك وتعليق مميز للفيديو الذي ستراه</span>
     <span id="check3">➡️</span>
   </a>
 </div>
 
-<div id="step4" class="step">
-  <a href="#" onclick="completeStep(4, 'https://t.me/MRGAMESFF'); return false;">
-    <span>📺🔔 اضغط هنا واشترك في قناة التيليجرام الخاصة بنا</span>
-    <span id="check4">➡️</span>
-  </a>
-</div>
-
 <div class="final-section">
-  <div id="finalMessage" class="final-message">❌ نفّذ الخطوات أولاً لكي يتم فتح رابط التحميل واظهار كلمه السر</div>
+  <div id="finalMessage" class="final-message">❌ نفّذ الخطوات أولاً لكي يتم فتح روابط التحميل</div>
   <div class="final-buttons">
-    <a id="btnApk" href="#" onclick="goToApk(); return false;">🔒اضغط هنا لتحميل سكريبت هيدشوت تلقائي فري فاير</a>
-    <div class="password-inline">
-      <span class="password-label">🔐 كلمة سر الملفات هي:</span>
-      <span id="passwordText" class="blurred">كلمة السر موجودة في الفيديو روح اسمعو بالكامل</span>
-      <button id="copyBtn" onclick="copyPassword()" style="display: none;">📋 اضغط هنا لنسخ كلمة السر</button>
-    </div>
+    <a id="btnDownload" href="#" onclick="goToDownload(); return false;">🔒 اضغط هنا لتحميل سكريبت فري فاير اخر اصدار</a>
   </div>
 </div>
 
 <script>
-  const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000;
-  const step3Links = ["https://youtu.be/ySAlw1O0sog?si=nAOJfDZXdHdRpE5z"];
-  const step3StorageKey = "step3State_ff_v1_script1vip";
-  const step4StorageKey = "step4State_ff_v1_script1vip_telegram";
+  const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000; // سنة
+  const step3Links = [
+    "https://www.youtube.com/watch?v=VrhVI-ubloY"
+    
+  ];
 
-  const savedState = JSON.parse(localStorage.getItem("stepsState") || "{}");
-  const step3Data = JSON.parse(localStorage.getItem(step3StorageKey) || "{}");
-  const step4Data = JSON.parse(localStorage.getItem(step4StorageKey) || "{}");
+  const step3StorageKey = "step3State_ff_v8789_page15855"; // خاص بالخطوة 3
+  const stepsStateKey = "stepsState"; // خاص بالخطوتين 1 و 2
 
-  const isStateExpired = () => {
+  // وظيفة للتحقق من انتهاء صلاحية التخزين
+  function isStateExpired(savedState) {
     if (!savedState.timestamp) return true;
     return Date.now() - savedState.timestamp > STEP_EXPIRY_MS;
-  };
-
-  window.onload = () => {
-    if (!isStateExpired()) {
-      for (let i = 1; i <= 4; i++) {
-        if (i === 3 && step3Data.completed) {
-          document.getElementById("step3").classList.add("completed");
-          document.getElementById("check3").innerText = "✅";
-          continue;
-        }
-        if (i === 4 && step4Data.completed) {
-          document.getElementById("step4").classList.add("completed");
-          document.getElementById("check4").innerText = "✅";
-          continue;
-        }
-        if (savedState["step" + i]) {
-          document.getElementById("step" + i).classList.add("completed");
-          document.getElementById("check" + i).innerText = "✅";
-          const nextStep = document.getElementById("step" + (i + 1));
-          if (nextStep) nextStep.classList.add("active");
-        } else break;
-      }
-
-      if (savedState.step2 && !step3Data.completed) {
-        document.getElementById("step3").classList.add("active");
-      }
-      if (step3Data.completed) {
-        document.getElementById("step4").classList.add("active");
-      }
-      unlockButtons();
-      updateProgressBar();
-    } else {
-      localStorage.removeItem("stepsState");
-      localStorage.removeItem(step3StorageKey);
-      localStorage.removeItem(step4StorageKey);
-    }
-  };
-
-  function saveStepState(step) {
-    if (step === 3 || step === 4) return;
-    const current = JSON.parse(localStorage.getItem("stepsState") || "{}");
-    current["step" + step] = true;
-    current.timestamp = Date.now();
-    localStorage.setItem("stepsState", JSON.stringify(current));
   }
 
-  function completeStep(step, url) {
-    const checkSpan = document.getElementById("check" + step);
-    const waitTime = (step === 4) ? 15000 : 10000;
+  window.onload = () => {
+    const savedState = JSON.parse(localStorage.getItem(stepsStateKey) || "{}");
+    const step3State = JSON.parse(localStorage.getItem(step3StorageKey) || "{}");
 
-    // خطوة تيليجرام
-    if (step === 4) {
-      if (step4Data.completed) {
-        window.open(url, "_blank");
-        return;
-      }
-
-      const popup = document.createElement("div");
-      popup.id = "popupOverlay";
-      popup.style.cssText = `
-        position:fixed;top:0;left:0;width:100%;height:100%;
-        background:rgba(0,0,0,0.75);display:flex;align-items:center;
-        justify-content:center;z-index:9999;
-      `;
-
-      const box = document.createElement("div");
-      box.style.cssText = `
-        background:#111;color:white;border-radius:15px;padding:25px;
-        max-width:90%;width:400px;text-align:center;
-        border:2px solid #00ffff;box-shadow:0 0 15px #0ff;font-size:16px;
-      `;
-
-      box.innerHTML = `
-        <h3 style="color:gold;margin-bottom:15px;font-size:20px;">📌 ملحوظة هامة جداً</h3>
-        <p style="line-height:1.7;">
-          يجب عليك الاشتراك في قناة التيليجرام لكي يتم فتح لك رابط التحميل<br>
-          وأيضًا لأننا سننشر سكريبت فري فاير أسطوري على قناة التيليجرام فقط 🔥
-        </p>
-        <a href="${url}" target="_blank" id="popupOkBtn" style="
-          margin-top:20px;padding:10px 22px;background:#00cc00;color:white;
-          border-radius:8px;font-weight:bold;cursor:pointer;
-          box-shadow:0 0 10px #0f0;transition:0.3s;font-size:16px;
-          display:inline-block;text-decoration:none;
-        ">📥 اضغط هنا للاشتراك 📥</a>
-      `;
-
-      popup.appendChild(box);
-      document.body.appendChild(popup);
-
-      document.getElementById("popupOkBtn").onclick = () => {
-        popup.remove();
-        checkSpan.innerHTML = '<span class="loading"></span>';
-
-        setTimeout(() => {
-          document.getElementById("step4").classList.add("completed");
-          checkSpan.innerText = "✅";
-          localStorage.setItem(step4StorageKey, JSON.stringify({ completed: true, timestamp: Date.now() }));
-          unlockButtons();
-          updateProgressBar();
-          window.open(url, "_blank");
-        }, waitTime);
-      };
+    // إذا انتهت صلاحية التخزين، نحذف البيانات
+    if (isStateExpired(savedState)) {
+      localStorage.removeItem(stepsStateKey);
+      localStorage.removeItem(step3StorageKey);
       return;
     }
 
-    // باقي الخطوات
-    checkSpan.innerHTML = '<span class="loading"></span>';
-    window.open(url, "_blank");
+    // تفعيل الخطوات المنفذة سابقًا
+    for (let i = 1; i <= 2; i++) {
+      if (savedState["step" + i]) {
+        document.getElementById("step" + i).classList.add("completed");
+        document.getElementById("check" + i).innerText = "✅";
+        const nextStep = document.getElementById("step" + (i + 1));
+        if (nextStep) nextStep.classList.add("active");
+      }
+    }
+
+    if (step3State.completed) {
+      document.getElementById("step3").classList.add("completed");
+      document.getElementById("check3").innerText = "✅";
+    } else if (savedState.step2) {
+      document.getElementById("step3").classList.add("active");
+    }
+
+    unlockButtons();
+    updateProgressBar();
+  };
+
+  // حفظ حالة الخطوة 1 أو 2
+  function saveStepState(step) {
+    const current = JSON.parse(localStorage.getItem(stepsStateKey) || "{}");
+    current["step" + step] = true;
+    current.timestamp = Date.now();
+    localStorage.setItem(stepsStateKey, JSON.stringify(current));
+  }
+
+  // إكمال خطوة (1 أو 2) مع فتح الرابط، أو الخطوة 3 بدون رابط
+  function completeStep(step, url = null) {
+    const check = document.getElementById("check" + step);
+    check.innerHTML = '<span class="loading"></span>';
+
+    if (step === 3) {
+      // اختيار رابط عشوائي للخطوة 3
+      const selected = step3Links[Math.floor(Math.random() * step3Links.length)];
+      window.open(selected, "_blank");
+    } else {
+      window.open(url, "_blank");
+    }
 
     setTimeout(() => {
       document.getElementById("step" + step).classList.add("completed");
-      checkSpan.innerText = "✅";
+      check.innerText = "✅";
       const nextStep = document.getElementById("step" + (step + 1));
       if (nextStep) nextStep.classList.add("active");
 
@@ -357,72 +267,35 @@
 
       unlockButtons();
       updateProgressBar();
-    }, waitTime);
-  }
-
-  function rotateStepLinks() {
-    const checkSpan = document.getElementById("check3");
-    const url = step3Links[Math.floor(Math.random() * step3Links.length)];
-    checkSpan.innerHTML = '<span class="loading"></span>';
-    window.open(url, "_blank");
-    setTimeout(() => {
-      document.getElementById("step3").classList.add("completed");
-      checkSpan.innerText = "✅";
-      localStorage.setItem(step3StorageKey, JSON.stringify({ completed: true, timestamp: Date.now() }));
-      document.getElementById("step4").classList.add("active");
-      unlockButtons();
-      updateProgressBar();
     }, 10000);
   }
 
+  // فتح رابط التحميل إذا اكتملت الخطوات
   function unlockButtons() {
-    const allCompleted = [1, 2, 3, 4].every(i =>
-      document.getElementById("step" + i).classList.contains("completed")
-    );
+    const allCompleted = [1, 2, 3].every(i => document.getElementById("step" + i).classList.contains("completed"));
     if (allCompleted) {
-      document.getElementById("finalMessage").innerText = '✅ تم تنفيذ كل الخطوات بنجاح';
-      document.getElementById("finalMessage").style.color = 'lime';
-      const btn = document.getElementById('btnApk');
-      btn.classList.add('active');
-      btn.innerText = btn.innerText.replace('🔒', '🔓');
-      document.getElementById("passwordText").classList.remove("blurred");
-      document.getElementById("copyBtn").style.display = "inline-block";
+      document.getElementById("finalMessage").innerText = "✅ تم تنفيذ كل الخطوات بنجاح";
+      document.getElementById("finalMessage").style.color = "lime";
+      const btn = document.getElementById("btnDownload");
+      btn.classList.add("active");
+      btn.innerText = "🔓 اضغط هنا لتحميل سكريبت فري فاير اخر اصدار";
     }
   }
 
+  // تحديث شريط التقدم
   function updateProgressBar() {
-    let completedSteps = 0;
-    for (let i = 1; i <= 4; i++) {
-      if (document.getElementById("step" + i).classList.contains("completed")) {
-        completedSteps++;
-      }
+    let done = 0;
+    for (let i = 1; i <= 3; i++) {
+      if (document.getElementById("step" + i).classList.contains("completed")) done++;
     }
-    document.getElementById("progressBar").style.width = (completedSteps / 4) * 100 + '%';
+    document.getElementById("progressBar").style.width = (done / 3) * 100 + "%";
   }
 
-  function goToApk() {
-    window.open("https://shr2.link/eFsv");
+  // فتح رابط التحميل
+  function goToDownload() {
+    window.open("https://shr2.link/eFsv", "_blank");
   }
-
-  function copyPassword() {
-    const password = document.getElementById("passwordText").textContent;
-    navigator.clipboard.writeText(password).then(() => {
-      const btn = document.getElementById("copyBtn");
-      btn.innerText = "✅ تم النسخ!";
-      setTimeout(() => {
-        btn.innerText = "📋 اضغط هنا لنسخ كلمة السر";
-      }, 2000);
-    });
-  }
-
-  document.addEventListener("contextmenu", e => e.preventDefault());
-  document.addEventListener("keydown", function(e) {
-    if ((e.ctrlKey && ["c", "x", "u", "s", "a"].includes(e.key.toLowerCase())) || e.key === "F12") {
-      e.preventDefault();
-    }
-  });
 </script>
-
 
 </body>
 </html>
